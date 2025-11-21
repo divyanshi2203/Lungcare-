@@ -1,0 +1,295 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}LungCARE AI Assistant{% endblock %}</title>
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet"
+        href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+
+  <!-- App styles (optional external CSS) -->
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  {% block extra_head %}{% endblock %}
+  <style>
+    /* Layout */
+    body {
+      background: radial-gradient(circle at top, #10172f 0, #020617 55%);
+      color: #e9eefc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .navbar {
+      background: rgba(7, 12, 22, 0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+    }
+
+    .navbar-brand {
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-size: 1.05rem;
+    }
+
+    .main-content {
+      flex: 1 0 auto;
+      padding: 2.5rem 0;
+    }
+
+    .footer {
+      flex-shrink: 0;
+      color: #a7b3d0;
+      border-top: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(7, 12, 22, 0.9);
+      backdrop-filter: blur(10px);
+      font-size: 0.85rem;
+    }
+
+    /* Navbar links */
+    a.nav-link {
+      color: #c7d2fe !important;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+    a.nav-link.active,
+    a.nav-link:hover {
+      color: #34d399 !important;
+    }
+
+    /* Generic glass card */
+    .card-glass {
+      background: radial-gradient(circle at top left, rgba(30,64,175,0.35), rgba(15,23,42,0.95));
+      border-radius: 20px;
+      padding: 1.75rem 1.9rem;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+    }
+
+    .card-glass h1,
+    .card-glass h2,
+    .card-glass h3 {
+      letter-spacing: 0.02em;
+    }
+
+    /* Form controls inside card-glass */
+    .card-glass input[type="text"],
+    .card-glass input[type="password"],
+    .card-glass input[type="email"],
+    .card-glass input[type="file"],
+    .card-glass select,
+    .card-glass textarea {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(15, 23, 42, 0.95);
+      color: #e5e7eb;
+      font-size: 0.95rem;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    .card-glass input:focus,
+    .card-glass select:focus,
+    .card-glass textarea:focus {
+      outline: none;
+      border-color: #34d399;
+      box-shadow: 0 0 0 0.16rem rgba(52, 211, 153, 0.3);
+      background: rgba(15, 23, 42, 1);
+    }
+
+    .card-glass label {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      font-size: 0.9rem;
+      color: #cbd5f5;
+    }
+
+    .card-glass .form-group {
+      margin-bottom: 0.9rem;
+    }
+
+    .card-glass small.text-danger {
+      font-size: 0.8rem;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      background: linear-gradient(135deg, #22c55e, #14b8a6);
+      border: none;
+      border-radius: 999px;
+      padding: 0.5rem 1.4rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      box-shadow: 0 14px 35px rgba(34, 197, 94, 0.35);
+      transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+      box-shadow: 0 18px 40px rgba(34, 197, 94, 0.4);
+    }
+
+    .btn-outline-danger {
+      border-radius: 999px;
+      padding: 0.3rem 0.9rem;
+      font-size: 0.8rem;
+    }
+
+    /* Alerts */
+    .alert {
+      border-radius: 12px;
+      border: none;
+      font-size: 0.9rem;
+    }
+
+    /* Tables */
+    .table-dark {
+      background-color: rgba(15, 23, 42, 0.96);
+    }
+
+    .table thead th {
+      border-top: none;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.45);
+      background: linear-gradient(to right, rgba(15,23,42,0.95), rgba(30,64,175,0.5));
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #c7d2fe;
+    }
+
+    .table tbody tr {
+      transition: background 0.12s ease;
+    }
+
+    .table tbody tr:hover {
+      background: rgba(15, 23, 42, 0.96);
+    }
+
+    .table td, .table th {
+      vertical-align: middle !important;
+    }
+
+    /* Badges for status */
+    .badge-slot {
+      border-radius: 999px;
+      padding: 0.2rem 0.65rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .badge-available {
+      background: rgba(34, 197, 94, 0.18);
+      color: #6ee7b7;
+    }
+
+    .badge-booked {
+      background: rgba(248, 113, 113, 0.18);
+      color: #fecaca;
+    }
+
+    .badge-you {
+      background: rgba(59, 130, 246, 0.18);
+      color: #bfdbfe;
+    }
+
+    /* Utility */
+    .page-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .page-heading h2 {
+      margin-bottom: 0;
+    }
+
+    .page-subtitle {
+      font-size: 0.9rem;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="{% url 'classifier:chat_view' %}">
+        LungCARE<span style="color:#34d399;">+</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nav"
+              aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="nav">
+        <ul class="navbar-nav ml-auto">
+          {% if user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link {% block nav_chat_active %}{% endblock %}"
+                 href="{% url 'classifier:chat_view' %}">
+                Chat
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'classifier:my_bookings' %}">
+                My Bookings
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'logout' %}">
+                Logout
+              </a>
+            </li>
+          {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'login' %}">Login</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'register' %}">Register</a>
+            </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main container -->
+  <main class="main-content">
+    <div class="container">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} mb-3">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer py-3">
+    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+      <small>© {{ year|default:2025 }} LungCARE · Health AI Assistant</small>
+      <small>This is a self care helper, not a substitute for professional medical advice.</small>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

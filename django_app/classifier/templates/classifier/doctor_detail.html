@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}{{ doctor.name }} · LungCARE{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <div class="page-heading">
+    <h2>{{ doctor.name }}</h2>
+    <span class="page-subtitle">
+      Appointments for <strong>{{ tomorrow_date|date:"d M Y" }}</strong>
+    </span>
+  </div>
+
+  <div class="row">
+    <!-- Doctor details -->
+    <div class="col-lg-5 mb-4">
+      <div class="card-glass h-100">
+        <div class="d-flex align-items-center mb-3">
+          <div class="rounded-circle mr-3"
+               style="width:48px;height:48px;background:radial-gradient(circle at 30% 0%,#34d399,#0ea5e9);display:flex;align-items:center;justify-content:center;font-weight:700;">
+            {{ doctor.name|slice:":2"|upper }}
+          </div>
+          <div>
+            <h3 class="mb-1" style="font-size:1.2rem;">{{ doctor.name }}</h3>
+            <p class="text-success mb-0" style="font-size:0.9rem;">
+              {{ doctor.specialization }}
+            </p>
+          </div>
+        </div>
+
+        <p class="mb-2">
+          <strong>Hospital:</strong> {{ doctor.hospital }}<br>
+          <strong>Location:</strong> {{ doctor.location }}
+        </p>
+
+        <p class="mb-2">
+          <strong>Experience:</strong> {{ doctor.experience }}
+        </p>
+
+        <p class="mb-2">
+          <strong>Consulting hours:</strong> {{ doctor.consulting_hours }}
+        </p>
+
+        <hr class="border-secondary">
+
+        <p class="mb-3">
+          {{ doctor.about }}
+        </p>
+
+        <p class="mb-1">
+          <strong>Phone:</strong> {{ doctor.phone }}
+        </p>
+        <p class="mb-0">
+          <strong>Email:</strong> {{ doctor.email }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Booking section -->
+    <div class="col-lg-7">
+      <div class="card-glass">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h4 class="mb-0">Book an Appointment</h4>
+          <span class="badge-slot badge-available">
+            Tomorrow · 1-hour slots
+          </span>
+        </div>
+        <p class="page-subtitle mb-3">
+          Choose a slot that works for you. Each time slot represents a one-hour consultation window.
+        </p>
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} mb-2">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        {% if user_has_booking_today %}
+          <p class="text-warning small mb-3">
+            You already have a booking with this doctor or in the same time slot for tomorrow.
+            You can’t book another slot for that time.
+          </p>
+        {% endif %}
+
+        <div class="table-responsive">
+          <table class="table table-sm table-dark table-bordered mb-0">
+            <thead>
+              <tr>
+                <th style="width: 40%;">Time Slot</th>
+                <th style="width: 25%;">Status</th>
+                <th style="width: 35%;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for slot in slots %}
+                <tr>
+                  <td>
+                    {{ slot|time:"h:i A" }}
+                    <span class="text-muted small">(1-hour slot)</span>
+                  </td>
+
+                  {% if slot.time in user_booked_times %}
+                    <td>
+                      <span class="badge-slot badge-you">Booked by you</span>
+                    </td>
+                    <td class="text-muted small">—</td>
+
+                  {% elif slot.time in booked_times %}
+                    <td>
+                      <span class="badge-slot badge-booked">Booked</span>
+                    </td>
+                    <td class="text-muted small">—</td>
+
+                  {% else %}
+                    <td>
+                      <span class="badge-slot badge-available">Available</span>
+                    </td>
+                    <td>
+                      <form method="post"
+                            action="{% url 'classifier:book_appointment' doctor.slug %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="slot_time" value="{{ slot|time:'H:i' }}">
+                        <button type="submit"
+                                class="btn btn-sm btn-primary"
+                                {% if doctor_user_has_booking %}disabled{% endif %}>
+                          Book this slot
+                        </button>
+                      </form>
+                    </td>
+                  {% endif %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

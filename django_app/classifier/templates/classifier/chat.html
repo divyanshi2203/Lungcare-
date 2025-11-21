@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Lungcare Chat Assistant{% endblock %}
+{% block nav_chat_active %}active{% endblock %}
+
+{% block extra_head %}
+<style>
+  .chat-page-wrapper {
+    max-width: 980px;
+    margin: 0 auto;
+  }
+
+  .chat-card {
+    background: radial-gradient(circle at top left, rgba(30,64,175,0.45), rgba(15,23,42,0.98));
+    border-radius: 20px;
+    padding: 1.6rem;
+    box-shadow: 0 26px 60px rgba(0, 0, 0, 0.65);
+    border: 1px solid rgba(148, 163, 184, 0.45);
+  }
+
+  .chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .chat-header h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    letter-spacing: 0.03em;
+  }
+
+  .chat-subtitle {
+    font-size: 0.85rem;
+    color: #a0aec0;
+  }
+
+  .chat-tag {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(15,118,110,0.38);
+    color: #a5f3fc;
+    border: 1px solid rgba(45, 212, 191, 0.5);
+  }
+
+  .chat-box {
+    background: radial-gradient(circle at top left, #111827 0, #020617 60%);
+    border-radius: 14px;
+    padding: 1rem;
+    height: 430px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    border: 1px solid rgba(55, 65, 81, 0.8);
+  }
+
+  .chat-message {
+    max-width: 80%;
+    padding: 0.6rem 0.9rem;
+    border-radius: 16px;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    word-wrap: break-word;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.55);
+  }
+
+  .bot-msg {
+    align-self: flex-start;
+    background: linear-gradient(135deg, #e5f0ff, #cbd5f5);
+    color: #020617;
+    border-bottom-left-radius: 4px;
+  }
+
+  .user-msg {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #6ee7b7, #a7f3d0);
+    color: #064e3b;
+    border-bottom-right-radius: 4px;
+  }
+
+  .chat-input-row {
+    margin-top: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .chat-input-row label {
+    font-size: 0.9rem;
+    color: #cbd5f5;
+    margin-bottom: 0;
+  }
+
+  .chat-input-row .controls {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .chat-input-row input[type="file"] {
+    background: rgba(15, 23, 42, 0.98);
+    color: #e9eefc;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    padding: 0.35rem;
+    border-radius: 999px;
+    max-width: 270px;
+  }
+
+  .chat-input-row input[type="file"]::file-selector-button {
+    background: #0b1120;
+    color: #e9eefc;
+    border: none;
+    padding: 0.35rem 0.9rem;
+    margin-right: 0.6rem;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+
+  .chat-input-row input[type="file"]::file-selector-button:hover {
+    background: #111827;
+  }
+
+  .btn-primary {
+    border-radius: 999px;
+    padding: 0.45rem 1.2rem;
+    font-weight: 600;
+  }
+
+  .symptom-input {
+    max-width: 220px;
+  }
+
+  .chat-footnote {
+    font-size: 0.78rem;
+    color: #9ca3af;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-page-wrapper">
+  <div class="chat-card">
+    <div class="chat-header">
+      <div>
+        <h2>Healthcare Chat Assistant</h2>
+        <p class="chat-subtitle mb-1">
+          Upload a lung CT or chest X-ray image and let the model guide you with next steps.
+          This is a self-care tool, not medical advice.
+        </p>
+        <p class="chat-footnote mb-0">
+          Our app is designed for lung CT scans — avoid using other types of images, as results may be unreliable.
+        </p>
+      </div>
+      <div>
+        <span class="chat-tag">AI · Lung Analysis</span>
+      </div>
+    </div>
+
+    <div id="chat-box" class="chat-box">
+      <div class="chat-message bot-msg">Please upload your image to begin.</div>
+    </div>
+
+    <div class="chat-input-row">
+      <label for="imageInput">Upload chest X-ray / CT image</label>
+      <div class="controls">
+        <input type="file" id="imageInput" class="form-control-file">
+        <button id="sendImageBtn" class="btn btn-primary">
+          Upload &amp; Analyze
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const chatBox = document.getElementById('chat-box');
+const imageInput = document.getElementById('imageInput');
+const sendImageBtn = document.getElementById('sendImageBtn');
+
+function appendMessage(message, sender='bot') {
+  const div = document.createElement('div');
+  div.classList.add('chat-message', sender === 'bot' ? 'bot-msg' : 'user-msg');
+  div.textContent = message;
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function appendDoctorLink(name, url) {
+  const div = document.createElement('div');
+  div.classList.add('chat-message', 'bot-msg');
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.textContent = name;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+
+  div.appendChild(a);
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+sendImageBtn.onclick = async () => {
+  const file = imageInput.files[0];
+  if (!file) {
+    alert('Please select an image first.');
+    return;
+  }
+
+  appendMessage('Uploading image...', 'user');
+
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const response = await fetch("{% url 'classifier:chat_view' %}", {
+    method: 'POST',
+    body: formData,
+  });
+
+  const data = await response.json();
+
+  if (data.prediction === 'cancer') {
+    appendMessage(data.message);
+    data.doctors.forEach(doc => appendDoctorLink(doc.name, doc.link));
+  } else if (data.prediction === 'normal') {
+    appendMessage(data.message);
+    Object.entries(data.symptoms).forEach(([key, val]) => {
+      appendMessage(`${key}: ${val}`);
+    });
+    appendMessage('Type 1, 2, or 3 below:', 'bot');
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.classList.add('form-control', 'mt-2', 'symptom-input');
+    input.placeholder = 'Enter 1, 2, or 3';
+
+    chatBox.parentNode.appendChild(input);
+    input.focus();
+
+    input.addEventListener('keypress', async (e) => {
+      if (e.key === 'Enter') {
+        const value = input.value.trim();
+        if (!value) return;
+
+        appendMessage(value, 'user');
+
+        const res = await fetch("{% url 'classifier:chat_view' %}", {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({symptom_choice: value})
+        });
+
+        const followup = await res.json();
+        appendMessage(followup.message);
+        followup.doctors.forEach(doc => appendDoctorLink(doc.name, doc.link));
+
+        input.remove();
+      }
+    });
+  }
+};
+</script>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %} 
+
+{% block title %}Login · LungCARE{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="card-glass">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="mb-0">Welcome back</h2>
+        <span class="badge-slot badge-you">Secure Login</span>
+      </div>
+      <p class="page-subtitle mb-3">
+        Sign in to access the LungCARE assistant, upload scans, and manage your appointments.
+      </p>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label for="{{ form.username.id_for_label }}">Username</label>
+          {{ form.username }}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.password.id_for_label }}">Password</label>
+          {{ form.password }}
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block mt-3">
+          Login
+        </button>
+      </form>
+
+      <p class="mt-4 mb-0 text-muted">
+        Don’t have an account?
+        <a href="{% url 'register' %}">Create one</a>.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

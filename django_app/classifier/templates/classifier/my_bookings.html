@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}My Bookings · LungCARE{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-heading">
+    <h2>My Bookings</h2>
+    <p class="page-subtitle mb-0">
+      View and manage your upcoming doctor appointments.
+    </p>
+  </div>
+
+  {% if bookings %}
+    <div class="card-glass">
+      <div class="table-responsive">
+        <table class="table table-striped table-dark table-bordered mb-0">
+          <thead>
+            <tr>
+              <th>Doctor</th>
+              <th>Address</th>
+              <th>Contact</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Booked On</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for appt in bookings %}
+              <tr>
+                <td>
+                  <div class="font-weight-semibold">{{ appt.doctor_name }}</div>
+                  {% if appt.doctor_specialization %}
+                    <div class="text-success small">{{ appt.doctor_specialization }}</div>
+                  {% endif %}
+                </td>
+
+                <td>
+                  {{ appt.doctor_hospital }}<br>
+                  <small class="text-muted">{{ appt.doctor_location }}</small>
+                </td>
+
+                <td>
+                  {% if appt.doctor_phone %}
+                    <div>{{ appt.doctor_phone }}</div>
+                  {% endif %}
+                  {% if appt.doctor_email %}
+                    <div>
+                      <a href="mailto:{{ appt.doctor_email }}">{{ appt.doctor_email }}</a>
+                    </div>
+                  {% endif %}
+                </td>
+
+                <td>{{ appt.appointment_datetime|date:"d M Y" }}</td>
+                <td>{{ appt.appointment_datetime|date:"h:i A" }} IST</td>
+                <td>{{ appt.booked_at|date:"d M Y, h:i A" }}</td>
+
+                <td>
+                  <form method="post"
+                        action="{% url 'classifier:delete_booking' appt.id %}"
+                        style="display:inline;"
+                        onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                      Cancel
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% else %}
+    <div class="card-glass text-center">
+      <h5 class="mb-2">No appointments yet</h5>
+      <p class="page-subtitle mb-3">
+        Once you book a slot with a doctor, you’ll see all your upcoming visits listed here.
+      </p>
+      <a href="{% url 'classifier:chat_view' %}" class="btn btn-primary">
+        Go to Chat &amp; Start
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
